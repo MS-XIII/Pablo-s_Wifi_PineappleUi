@@ -1,0 +1,12 @@
+{
+    "author": "WPC",
+    "description": "Forward PineAP events and alerts to Telegram and/or Discord.",
+    "devices": [
+        "nano",
+        "tetra"
+    ],
+    "system": true,
+    "title": "Notifications",
+    "version": "1.0",
+    "index": 15
+}

@@ -1,0 +1,12 @@
+{
+    "author": "WPC",
+    "description": "Rogue AP detector, evil twin detection, deauth attack detector with alerts, and device vendor fingerprinting.",
+    "devices": [
+        "nano",
+        "tetra"
+    ],
+    "system": true,
+    "title": "Security",
+    "version": "1.0",
+    "index": 7
+}

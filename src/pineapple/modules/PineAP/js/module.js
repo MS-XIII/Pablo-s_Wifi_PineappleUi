@@ -457,6 +457,144 @@ registerController("CapturedHandshakesController", ['$api', '$scope', '$timeout'
     $scope.getAllHandshakes();
 }]);
 
+registerController("PineAPToolsController", ['$api', '$scope', '$timeout', '$interval', function($api, $scope, $timeout, $interval) {
+    // -------- multi-interface (#35) --------
+    $scope.interfaces = [];
+    $scope.currentInterface = '';
+    $scope.secondaryInterface = '';
+    $scope.ifaceOutput = '';
+    $scope.ifaceBusy = false;
+
+    $scope.getInterfaces = function() {
+        $api.request({ module: 'PineAP', action: 'getPineAPInterfaces' }, function(response) {
+            if (response.success === true) {
+                $scope.interfaces = response.interfaces;
+                $scope.currentInterface = response.current;
+                $scope.secondaryInterface = response.secondary;
+            }
+        });
+    };
+
+    $scope.setSecondaryInterface = function() {
+        $api.request({ module: 'PineAP', action: 'setSecondaryInterface', interface: $scope.secondaryInterface }, function(response) {
+            if (response.success === true) {
+                $scope.getInterfaces();
+            }
+        });
+    };
+
+    $scope.startSecondaryMonitor = function() {
+        $scope.ifaceBusy = true;
+        $scope.ifaceOutput = '';
+        $api.request({ module: 'PineAP', action: 'startSecondaryMonitor' }, function(response) {
+            $scope.ifaceBusy = false;
+            $scope.ifaceOutput = response.output || response.error || '';
+            $scope.getInterfaces();
+        });
+    };
+
+    $scope.stopSecondaryMonitor = function() {
+        $scope.ifaceBusy = true;
+        $scope.ifaceOutput = '';
+        $api.request({ module: 'PineAP', action: 'stopSecondaryMonitor' }, function(response) {
+            $scope.ifaceBusy = false;
+            $scope.ifaceOutput = response.output || response.error || '';
+            $scope.getInterfaces();
+        });
+    };
+
+    // -------- deauth amplifier (#37) --------
+    $scope.amp = {
+        bssid: '',
+        clientsText: '',
+        channels: [1, 6, 11],
+        multiplier: 2,
+        bursts: 3
+    };
+    $scope.ampRunning = false;
+    $scope.ampSummary = null;
+    $scope.ampError = '';
+    $scope.ampPoll = null;
+    $scope.channelOptions = [1,2,3,4,5,6,7,8,9,10,11,12,13,36,40,44,48,149,153,157,161,165];
+
+    $scope.toggleChannel = function(channel) {
+        var idx = $scope.amp.channels.indexOf(channel);
+        if (idx === -1) {
+            $scope.amp.channels.push(channel);
+        } else {
+            $scope.amp.channels.splice(idx, 1);
+        }
+        $scope.amp.channels.sort(function(a, b) { return a - b; });
+    };
+
+    $scope.isChannelSelected = function(channel) {
+        return $scope.amp.channels.indexOf(channel) !== -1;
+    };
+
+    $scope.startAmplifier = function() {
+        var clients = $scope.amp.clientsText.split('\n').map(function(s) { return s.trim(); }).filter(function(s) { return s.length > 0; });
+        if (!$scope.amp.bssid || clients.length === 0) {
+            $scope.ampError = 'Target BSSID and at least one client MAC are required.';
+            return;
+        }
+        if ($scope.amp.channels.length === 0) {
+            $scope.ampError = 'Select at least one channel.';
+            return;
+        }
+
+        $scope.ampError = '';
+        $scope.ampSummary = null;
+        $scope.ampRunning = true;
+        $api.request({
+            module: 'PineAP',
+            action: 'deauthAmplifier',
+            bssid: $scope.amp.bssid,
+            clients: clients,
+            channels: $scope.amp.channels,
+            multiplier: $scope.amp.multiplier,
+            bursts: $scope.amp.bursts
+        }, function(response) {
+            if (response.success === true) {
+                $scope.ampPoll = $interval(function() {
+                    $api.request({ module: 'PineAP', action: 'getDeauthAmplifierStatus' }, function(resp) {
+                        if (resp.running === true) {
+                            return;
+                        }
+                        $interval.cancel($scope.ampPoll);
+                        $scope.ampRunning = false;
+                        if (resp.error) {
+                            $scope.ampError = resp.error;
+                        } else {
+                            $scope.ampSummary = resp.summary;
+                        }
+                    });
+                }, 3000);
+            } else {
+                $scope.ampRunning = false;
+                $scope.ampError = response.error || 'Could not start amplifier';
+            }
+        });
+    };
+
+    $scope.stopAmplifier = function() {
+        $api.request({ module: 'PineAP', action: 'stopDeauthAmplifier' }, function() {
+            if ($scope.ampPoll) {
+                $interval.cancel($scope.ampPoll);
+                $scope.ampPoll = null;
+            }
+            $scope.ampRunning = false;
+        });
+    };
+
+    $scope.getInterfaces();
+
+    $scope.$on('$destroy', function() {
+        if ($scope.ampPoll) {
+            $interval.cancel($scope.ampPoll);
+        }
+    });
+}]);
+
 registerController("PinejectorController", ['$api', '$scope', function($api, $scope){
     $scope.injecting = false;
     $scope.payload = "";

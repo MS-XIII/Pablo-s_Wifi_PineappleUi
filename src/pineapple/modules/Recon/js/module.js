@@ -1,5 +1,30 @@
 registerController('ReconController', ['$api', '$scope', '$rootScope', '$interval', '$timeout', '$cookies', function($api, $scope, $rootScope, $interval, $timeout, $cookies) {
     $scope.accessPoints = [];
+
+    $scope.cloneEvilTwin = function(accessPoint) {
+        $scope.evilTwinMessage = '';
+        $scope.evilTwinError = '';
+        $api.request({
+            module: 'PineAP',
+            action: 'cloneEvilTwin',
+            ssid: accessPoint.ssid,
+            bssid: accessPoint.bssid,
+            channel: accessPoint.channel,
+            encryption: accessPoint.encryption
+        }, function(response) {
+            if (response.success === true) {
+                $scope.evilTwinMessage = 'Evil twin cloned: ' + response.ssid + ' (' + response.bssid + ') on channel ' + response.channel;
+                $timeout(function() {
+                    $scope.evilTwinMessage = '';
+                }, 5000);
+            } else {
+                $scope.evilTwinError = response.error || 'Could not clone evil twin';
+                $timeout(function() {
+                    $scope.evilTwinError = '';
+                }, 5000);
+            }
+        });
+    };
     $scope.unassociatedClients = [];
     $scope.outOfRangeClients = [];
     $scope.outOfRangeClientsCount = 0;

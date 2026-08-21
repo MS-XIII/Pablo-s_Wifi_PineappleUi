@@ -1,9 +1,10 @@
 body {
-    background-color: #f8f8f8;
+    background-color: #0a0d12;
+    color: #e8ecf4;
 }
 
 .module-table > * > tr:nth-child(even) {
-    background-color: #f5f5f5;
+    background-color: rgba(255, 255, 255, 0.03);
 }
 
 .default-cursor {
@@ -62,7 +63,7 @@ body {
 
 .caret-reversed {
     border-top-width: 0;
-    border-bottom: 4px solid #000;
+    border-bottom: 4px solid #a2acbf;
 }
 
 .image-small-18 {
@@ -112,7 +113,7 @@ body {
 }
 
 .module-nav li:hover {
-    background-color: #eee;
+    background-color: #1b2230;
 }
 
 .sidebar .sidebar-nav.navbar-collapse {
@@ -122,15 +123,24 @@ body {
 
 .sidebar ul li {
     cursor: pointer;
-    border-bottom: 1px solid #e7e7e7;
+    border-bottom: 1px solid #1a212e;
+}
+
+.sidebar {
+    background-color: #12161f;
+    border-right: 1px solid #232b3b;
+}
+
+.sidebar ul li a {
+    color: #a2acbf;
 }
 
 .sidebar .active {
-    background-color: #eee;
+    background-color: #16202b;
 }
 
 .sidebar .active a {
-    color: #555;
+    color: #00e5a0;
     font-weight: bold;
 }
 
@@ -147,7 +157,7 @@ body {
         width: calc(100% - 50px);
         margin-left: 50px;
         padding: 15px 30px;
-        border-left: 1px solid #e7e7e7;
+        border-left: 1px solid #232b3b;
     }
 
     .sidebar {
@@ -157,7 +167,7 @@ body {
         float: left;
         z-index: 99;
         min-height: 50px;
-        border-right: 1px solid #e7e7e7;
+        border-right: 1px solid #232b3b;
         position: relative;
     }
 
@@ -204,7 +214,8 @@ body {
 }
 
 .navbar-default .navbar-nav > li > a:focus, .navbar-default .navbar-nav > li > a:hover {
-	background-color: #eee;
+	background-color: #1b2230;
+	color: #00e5a0;
 }
 
 .navbar-header {
@@ -226,7 +237,7 @@ body {
 
 .module-content {
     padding: 15px 15px;
-    background-color: #fff;
+    background-color: #0e1219;
 }
 
 .pointer {
@@ -246,9 +257,9 @@ body {
     .dropdown-menu-top {
         margin: auto !important;
         position: absolute !important;
-        background-color: #fff !important;
+        background-color: #171c27 !important;
         word-wrap: break-word !important;
-        border: 1px solid #ccc !important;
+        border: 1px solid #232b3b !important;
         width: 300px !important;
         max-width: 300px !important;
     }
@@ -291,6 +302,7 @@ body {
     content: url('/img/logo.png');
     max-height: 30px;
     padding-bottom: 5px;
+    filter: invert(1);
 }
 
 .brand-text::after {
@@ -298,6 +310,8 @@ body {
     padding-top: 3px;
     padding-left: 5px;
     float: right;
+    color: #e8ecf4;
+    font-weight: 700;
 }
 
 #accordion .panel-heading .panel-title:after {
@@ -317,7 +331,8 @@ body {
 
 .tab-pane {
     padding: 25px;
-    border: 1px solid #ddd;
+    background-color: #12161f;
+    border: 1px solid #232b3b;
     border-top: 0;
     border-radius: 0 0 4px 4px;
 }
@@ -327,8 +342,17 @@ body {
 }
 
 .nav-tabs > li > a {
-    border-color: #eee #eee #ddd;
-    background-color: #eeeeee78;
+    border-color: #232b3b #232b3b #232b3b;
+    background-color: #171c27;
+    color: #a2acbf;
+}
+
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:hover,
+.nav-tabs > li.active > a:focus {
+    color: #00e5a0;
+    background-color: #12161f;
+    border-bottom-color: transparent;
 }
 
 .sidebar-nav .module-text {

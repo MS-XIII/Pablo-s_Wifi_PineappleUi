@@ -1,0 +1,284 @@
+<div class="tab-content" ng-controller="AIController">
+    <ul class="nav nav-tabs tabs-block" role="tablist">
+        <li class="nav-item active">
+            <a href="#ai-settings" role="tab" data-toggle="tab">Settings</a>
+        </li>
+        <li class="nav-item">
+            <a href="#ai-handshake" role="tab" data-toggle="tab">Handshake Advisor</a>
+        </li>
+        <li class="nav-item">
+            <a href="#ai-targets" role="tab" data-toggle="tab">Target Scoring</a>
+        </li>
+        <li class="nav-item">
+            <a href="#ai-portal" role="tab" data-toggle="tab">Captive Portal</a>
+        </li>
+        <li class="nav-item">
+            <a href="#ai-pool" role="tab" data-toggle="tab">SSID Pool</a>
+        </li>
+        <li class="nav-item">
+            <a href="#ai-nicknames" role="tab" data-toggle="tab">Nicknames</a>
+        </li>
+        <li class="nav-item">
+            <a href="#ai-anomaly" role="tab" data-toggle="tab">Anomalies</a>
+        </li>
+        <li class="nav-item">
+            <a href="#ai-chat" role="tab" data-toggle="tab">Chat</a>
+        </li>
+        <li class="nav-item">
+            <a href="#ai-modules" role="tab" data-toggle="tab">Modules</a>
+        </li>
+        <li class="nav-item">
+            <a href="#ai-intel" role="tab" data-toggle="tab">Threat Intel</a>
+        </li>
+        <li class="nav-item">
+            <a href="#ai-honeypot" role="tab" data-toggle="tab">Honeypot</a>
+        </li>
+        <li class="nav-item">
+            <a href="#ai-wpa" role="tab" data-toggle="tab">WPA/WPS Risk</a>
+        </li>
+    </ul>
+
+    <!-- ============ SETTINGS ============ -->
+    <div class="tab-pane fade active in" id="ai-settings">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">AI Provider Settings</h3>
+                    </div>
+                    <div class="panel-body">
+                        <p class="text-muted">
+                            Add your API key to enable the AI tools. Keys are stored on the device in
+                            <code>/etc/pineapple/ai.json</code> and are only used to talk to the provider you select.
+                        </p>
+                        <div class="form-group">
+                            <label>Provider</label>
+                            <select class="form-control" ng-model="settings.provider" ng-change="onProviderChange()" ng-options="p.value as p.label for p in providers"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>API Base URL</label>
+                            <input class="form-control" type="text" ng-model="settings.baseUrl" placeholder="https://api.openai.com/v1"/>
+                            <small class="text-muted">Use any OpenAI-compatible endpoint (OpenAI, Groq, OpenRouter, Ollama, LM Studio...).</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Model</label>
+                            <input class="form-control" type="text" ng-model="settings.model" placeholder="gpt-4o-mini"/>
+                        </div>
+                        <div class="form-group">
+                            <label>API Key</label>
+                            <input class="form-control" type="password" ng-model="settings.apiKey" placeholder="sk-..."/>
+                        </div>
+                        <div class="form-group">
+                            <label>Temperature</label>
+                            <input class="form-control" type="number" step="0.1" min="0" max="2" ng-model="settings.temperature"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Global System Prompt (optional override)</label>
+                            <textarea class="form-control" rows="3" ng-model="settings.systemPrompt" placeholder="Leave empty to use the built-in security-assistant prompt."></textarea>
+                        </div>
+                        <button class="btn btn-primary" ng-click="saveSettings()" ng-disabled="!settingsLoaded">Save Settings</button>
+                        <button class="btn btn-default" ng-click="testConnection()" ng-disabled="testing">
+                            <span ng-hide="testing">Test Connection</span>
+                            <img src="img/throbber.gif" class="button-throbber" ng-show="testing"/>
+                        </button>
+                        <p class="alert well-sm alert-success" ng-show="settingsSaved">Settings saved.</p>
+                        <p class="alert well-sm alert-info" ng-show="testResult">{{ testResult }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ HANDSHAKE ADVISOR ============ -->
+    <div class="tab-pane fade" id="ai-handshake">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">AI Handshake Advisor</h3>
+            </div>
+            <div class="panel-body">
+                <p class="text-muted">Analyzes captured handshakes and nearby APs, then recommends the best attack path (tool, wordlist strategy, difficulty).</p>
+                <button class="btn btn-primary" ng-click="runHandshakeAdvisor()" ng-disabled="busy">Advise Me</button>
+                <img src="img/throbber.gif" ng-show="busy"/>
+                <p class="alert well-sm alert-danger" ng-show="error">{{ error }}</p>
+                <pre class="ai-output" ng-show="output">{{ output }}</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ TARGET SCORING ============ -->
+    <div class="tab-pane fade" id="ai-targets">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">AI Target Scoring</h3>
+            </div>
+            <div class="panel-body">
+                <p class="text-muted">Scores every AP in the latest recon scan from 0-100 with a one-line reason.</p>
+                <button class="btn btn-primary" ng-click="runTargetScoring()" ng-disabled="busy">Score Targets</button>
+                <img src="img/throbber.gif" ng-show="busy"/>
+                <p class="alert well-sm alert-danger" ng-show="error">{{ error }}</p>
+                <pre class="ai-output" ng-show="output">{{ output }}</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ CAPTIVE PORTAL ============ -->
+    <div class="tab-pane fade" id="ai-portal">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">AI Captive Portal Generator</h3>
+            </div>
+            <div class="panel-body">
+                <p class="text-muted">Generates a complete HTML captive portal page from a description. Save it directly as the landing page.</p>
+                <div class="form-group">
+                    <label>Portal scenario</label>
+                    <input class="form-control" type="text" ng-model="inputs.captive_portal" placeholder="e.g. hotel guest wifi login"/>
+                </div>
+                <button class="btn btn-primary" ng-click="runCaptivePortal()" ng-disabled="busy">Generate Portal</button>
+                <button class="btn btn-success" ng-click="applyPortal()" ng-disabled="!output">Save as Landing Page</button>
+                <img src="img/throbber.gif" ng-show="busy"/>
+                <p class="alert well-sm alert-danger" ng-show="error">{{ error }}</p>
+                <pre class="ai-output" ng-show="output">{{ output }}</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ SSID POOL ============ -->
+    <div class="tab-pane fade" id="ai-pool">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">AI SSID Pool Generator</h3>
+            </div>
+            <div class="panel-body">
+                <p class="text-muted">Generates realistic SSID names for a scenario and pushes them straight into the PineAP pool.</p>
+                <div class="form-group">
+                    <label>Scenario</label>
+                    <input class="form-control" type="text" ng-model="inputs.ssid_pool" placeholder="e.g. coffee shop customers"/>
+                </div>
+                <button class="btn btn-primary" ng-click="runSSIDPool()" ng-disabled="busy">Generate SSIDs</button>
+                <button class="btn btn-success" ng-click="applyPool()" ng-disabled="!output">Add All to PineAP Pool</button>
+                <img src="img/throbber.gif" ng-show="busy"/>
+                <p class="alert well-sm alert-danger" ng-show="error">{{ error }}</p>
+                <pre class="ai-output" ng-show="output">{{ output }}</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ NICKNAMES ============ -->
+    <div class="tab-pane fade" id="ai-nicknames">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">AI Device Nicknamer</h3>
+            </div>
+            <div class="panel-body">
+                <p class="text-muted">Suggests memorable nicknames for observed client MACs. Copy them into the Notes module to save.</p>
+                <button class="btn btn-primary" ng-click="runNicknamer()" ng-disabled="busy">Suggest Nicknames</button>
+                <img src="img/throbber.gif" ng-show="busy"/>
+                <p class="alert well-sm alert-danger" ng-show="error">{{ error }}</p>
+                <pre class="ai-output" ng-show="output">{{ output }}</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ ANOMALY ============ -->
+    <div class="tab-pane fade" id="ai-anomaly">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">AI Anomaly Detector</h3>
+            </div>
+            <div class="panel-body">
+                <p class="text-muted">Scans the PineAP log and observed clients for deauth storms, probe anomalies and MAC churn.</p>
+                <button class="btn btn-primary" ng-click="runAnomaly()" ng-disabled="busy">Detect Anomalies</button>
+                <img src="img/throbber.gif" ng-show="busy"/>
+                <p class="alert well-sm alert-danger" ng-show="error">{{ error }}</p>
+                <pre class="ai-output" ng-show="output">{{ output }}</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ CHAT ============ -->
+    <div class="tab-pane fade" id="ai-chat">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">AI Chat Assistant</h3>
+            </div>
+            <div class="panel-body">
+                <p class="text-muted">Free-form chat with an assistant that knows your device state and can explain PineAP settings, recon results and more.</p>
+                <div class="form-group">
+                    <textarea class="form-control" rows="3" ng-model="inputs.chat" placeholder="Ask anything about your engagement..."></textarea>
+                </div>
+                <button class="btn btn-primary" ng-click="runChat()" ng-disabled="busy">Send</button>
+                <img src="img/throbber.gif" ng-show="busy"/>
+                <p class="alert well-sm alert-danger" ng-show="error">{{ error }}</p>
+                <pre class="ai-output" ng-show="output">{{ output }}</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODULES ============ -->
+    <div class="tab-pane fade" id="ai-modules">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">AI Module Suggester</h3>
+            </div>
+            <div class="panel-body">
+                <p class="text-muted">Recommends which modules to use or install based on your goal and what is already installed.</p>
+                <div class="form-group">
+                    <label>Goal</label>
+                    <input class="form-control" type="text" ng-model="inputs.module_goal" placeholder="e.g. capture and crack WPA2 handshakes"/>
+                </div>
+                <button class="btn btn-primary" ng-click="runModuleSuggest()" ng-disabled="busy">Suggest Modules</button>
+                <img src="img/throbber.gif" ng-show="busy"/>
+                <p class="alert well-sm alert-danger" ng-show="error">{{ error }}</p>
+                <pre class="ai-output" ng-show="output">{{ output }}</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ THREAT INTEL ============ -->
+    <div class="tab-pane fade" id="ai-intel">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">AI Threat Intel Enrichment</h3>
+            </div>
+            <div class="panel-body">
+                <p class="text-muted">Flags suspicious networks/devices from the latest recon (hidden SSIDs, enterprise APs, attacker patterns).</p>
+                <button class="btn btn-primary" ng-click="runThreatIntel()" ng-disabled="busy">Enrich</button>
+                <img src="img/throbber.gif" ng-show="busy"/>
+                <p class="alert well-sm alert-danger" ng-show="error">{{ error }}</p>
+                <pre class="ai-output" ng-show="output">{{ output }}</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ HONEYPOT ============ -->
+    <div class="tab-pane fade" id="ai-honeypot">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">AI Honeypot Response Tuner</h3>
+            </div>
+            <div class="panel-body">
+                <p class="text-muted">Recommends concrete PineAP setting changes (karma, beacon responses, broadcast interval) for maximum engagement.</p>
+                <button class="btn btn-primary" ng-click="runHoneypotTuner()" ng-disabled="busy">Tune</button>
+                <img src="img/throbber.gif" ng-show="busy"/>
+                <p class="alert well-sm alert-danger" ng-show="error">{{ error }}</p>
+                <pre class="ai-output" ng-show="output">{{ output }}</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ WPA/WPS RISK ============ -->
+    <div class="tab-pane fade" id="ai-wpa">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">AI WPA/WPS Risk Assessment</h3>
+            </div>
+            <div class="panel-body">
+                <p class="text-muted">Rates the risk of every scanned AP (WPS-enabled, WEP, weak encryption, enterprise misconfiguration).</p>
+                <button class="btn btn-primary" ng-click="runWPARisk()" ng-disabled="busy">Assess</button>
+                <img src="img/throbber.gif" ng-show="busy"/>
+                <p class="alert well-sm alert-danger" ng-show="error">{{ error }}</p>
+                <pre class="ai-output" ng-show="output">{{ output }}</pre>
+            </div>
+        </div>
+    </div>
+</div>

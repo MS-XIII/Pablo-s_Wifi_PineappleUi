@@ -239,6 +239,111 @@ registerController('ConfigurationLandingPageController', ['$api', '$scope', '$ti
 	$scope.getAutoStartStatus();
 }]);
 
+registerController('TorController', ['$api', '$scope', '$timeout', '$interval', function($api, $scope, $timeout, $interval) {
+    $scope.torStatus = {
+        installed: false,
+        running: false,
+        obfs4: false,
+        enabled: false
+    };
+    $scope.torConfig = {
+        socksPort: 9050,
+        bridges: '',
+        useObfs4: false
+    };
+    $scope.torBusy = false;
+    $scope.torMessage = '';
+    $scope.torError = '';
+    $scope.torInstallPoll = null;
+
+    $scope.getTorStatus = function() {
+        $api.request({ module: 'Configuration', action: 'getTorStatus' }, function(response) {
+            if (response.success === true) {
+                $scope.torStatus = response;
+                if (response.installed) {
+                    $scope.getTorConfig();
+                }
+            }
+        });
+    };
+
+    $scope.getTorConfig = function() {
+        $api.request({ module: 'Configuration', action: 'getTorConfig' }, function(response) {
+            if (response.success === true) {
+                $scope.torConfig = response.config;
+            }
+        });
+    };
+
+    $scope.toggleTor = function() {
+        $scope.torBusy = true;
+        $scope.torError = '';
+        $api.request({ module: 'Configuration', action: 'setTorEnabled', enabled: $scope.torStatus.running ? false : true }, function(response) {
+            $scope.torBusy = false;
+            if (response.success === true) {
+                $scope.getTorStatus();
+            } else {
+                $scope.torError = response.error || 'Could not toggle Tor';
+            }
+        });
+    };
+
+    $scope.saveTorConfig = function() {
+        $scope.torBusy = true;
+        $scope.torError = '';
+        $api.request({
+            module: 'Configuration',
+            action: 'saveTorConfig',
+            socksPort: $scope.torConfig.socksPort,
+            bridges: $scope.torConfig.bridges,
+            useObfs4: $scope.torConfig.useObfs4
+        }, function(response) {
+            $scope.torBusy = false;
+            if (response.success === true) {
+                $scope.torMessage = 'Tor config saved.';
+                $timeout(function() { $scope.torMessage = ''; }, 3000);
+            } else {
+                $scope.torError = response.error || 'Could not save Tor config';
+            }
+        });
+    };
+
+    $scope.installTor = function() {
+        $scope.torBusy = true;
+        $scope.torError = '';
+        $scope.torMessage = 'Installing Tor, please wait...';
+        $api.request({ module: 'Configuration', action: 'installTorPackage' }, function() {
+            $scope.torInstallPoll = $interval(function() {
+                $api.request({ module: 'Configuration', action: 'getTorStatus' }, function(response) {
+                    if (response.success === true && response.installed) {
+                        $interval.cancel($scope.torInstallPoll);
+                        $scope.torBusy = false;
+                        $scope.torMessage = 'Tor installed.';
+                        $scope.getTorStatus();
+                    }
+                });
+            }, 3000);
+        });
+    };
+
+    $scope.installObfs4 = function() {
+        $scope.torBusy = true;
+        $api.request({ module: 'Configuration', action: 'installObfs4Package' }, function() {
+            $scope.torBusy = false;
+            $scope.torMessage = 'obfs4 install started.';
+            $timeout(function() { $scope.torMessage = ''; }, 3000);
+        });
+    };
+
+    $scope.getTorStatus();
+
+    $scope.$on('$destroy', function() {
+        if ($scope.torInstallPoll) {
+            $interval.cancel($scope.torInstallPoll);
+        }
+    });
+}]);
+
 registerController('ButtonScriptController', ['$api', '$scope', '$timeout', function($api, $scope, $timeout) {
 	$scope.buttonScript = "";
 	$scope.scriptError = '';

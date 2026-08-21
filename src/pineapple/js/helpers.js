@@ -28,7 +28,7 @@ function annotateMacs() {
         });
     mac_rows.filter(function() {
             return locallyAssigned(this.textContent.trim());
-        }).prop('title', 'This MAC was likely locally assigned and was not assigned by the hardware vendor. This could be the result of MAC randomization, Spoofing, or a vendor that has not registered with the IEEE Registration Authority.').css('color', '#31708f');
+        }).prop('title', 'This MAC was likely locally assigned and was not assigned by the hardware vendor. This could be the result of MAC randomization, Spoofing, or a vendor that has not registered with the IEEE Registration Authority.').css('color', '#4dc3ff');
     mac_rows.filter(function() {
             return !locallyAssigned(this.textContent.trim());
         }).prop('title', 'This MAC was likely globally assigned by the hardware vendor. It has probably not been randomized for privacy.');

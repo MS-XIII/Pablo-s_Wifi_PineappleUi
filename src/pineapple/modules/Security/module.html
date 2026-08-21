@@ -1,0 +1,198 @@
+<div class="tab-content" ng-controller="SecurityController">
+    <ul class="nav nav-tabs tabs-block" role="tablist">
+        <li class="nav-item active">
+            <a href="#sec-rogue" role="tab" data-toggle="tab">Rogue AP / Evil Twin</a>
+        </li>
+        <li class="nav-item">
+            <a href="#sec-deauth" role="tab" data-toggle="tab">Deauth Detector</a>
+        </li>
+        <li class="nav-item">
+            <a href="#sec-fingerprint" role="tab" data-toggle="tab">Device Fingerprint</a>
+        </li>
+    </ul>
+
+    <!-- ============ ROGUE AP / EVIL TWIN ============ -->
+    <div class="tab-pane fade active in" id="sec-rogue">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            Rogue AP Detector
+                            <span class="pull-right">
+                                <button class="btn btn-default btn-xs btn-fixed-length" ng-click="getScanData()">Refresh</button>
+                            </span>
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+                        <p class="text-muted">
+                            Flags networks that use <b>your own SSID</b> but a different BSSID - a classic rogue/fake access point.
+                            Analysis runs against the latest recon scan, so run a recon scan first.
+                        </p>
+                        <p class="alert well-sm alert-danger" ng-show="scanError">{{ scanError }}</p>
+                        <p class="alert well-sm alert-success" ng-show="loaded && rogueAPs.length === 0">No rogue APs detected on your SSIDs.</p>
+                        <table class="table table-hover" ng-show="rogueAPs.length">
+                            <thead>
+                                <tr>
+                                    <th>SSID</th>
+                                    <th>BSSID</th>
+                                    <th>Channel</th>
+                                    <th>Signal</th>
+                                    <th>Encryption</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="ap in rogueAPs">
+                                    <td class="autoselect">{{ ap.ssid }}</td>
+                                    <td class="autoselect">{{ ap.bssid }}</td>
+                                    <td>{{ ap.channel }}</td>
+                                    <td>{{ ap.signal }}</td>
+                                    <td>{{ ap.encryption }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Evil Twin Detection</h3>
+                    </div>
+                    <div class="panel-body">
+                        <p class="text-muted">
+                            Same SSID broadcast by <b>multiple BSSIDs</b> in one scan = evil twin candidates. Sorted by signal (strongest last).
+                        </p>
+                        <p class="alert well-sm alert-success" ng-show="loaded && evilTwins.length === 0">No duplicate-SSID networks detected.</p>
+                        <div ng-repeat="twin in evilTwins">
+                            <h5><b>{{ twin.ssid }}</b> <span class="badge">{{ twin.aps.length }} BSSIDs</span></h5>
+                            <table class="table table-hover table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th>BSSID</th>
+                                        <th>Channel</th>
+                                        <th>Signal</th>
+                                        <th>Encryption</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="ap in twin.aps">
+                                        <td class="autoselect">{{ ap.bssid }}</td>
+                                        <td>{{ ap.channel }}</td>
+                                        <td>{{ ap.signal }}</td>
+                                        <td>{{ ap.encryption }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ DEAUTH DETECTOR ============ -->
+    <div class="tab-pane fade" id="sec-deauth">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Deauth Attack Detector</h3>
+                    </div>
+                    <div class="panel-body">
+                        <p class="text-muted">
+                            Captures deauth/disassoc frames on the monitor interface (<code>wlan1mon</code>) for a few seconds.
+                            If the frame count passes the threshold, a panel notification plus Telegram/Discord alert (if configured) is fired.
+                        </p>
+                        <div class="form-inline">
+                            <div class="form-group">
+                                <label>Capture duration (s)</label>
+                                <select class="form-control" ng-model="deauthDuration" ng-options="d for d in [10, 15, 30, 60]"></select>
+                            </div>
+                            <div class="form-group margin-left">
+                                <label>Alert threshold</label>
+                                <select class="form-control" ng-model="deauthThreshold" ng-options="t for t in [20, 50, 100, 200]"></select>
+                            </div>
+                            <button class="btn btn-primary" ng-click="startDeauthScan()" ng-disabled="deauthRunning">
+                                <span ng-hide="deauthRunning">Start Detection</span>
+                                <span ng-show="deauthRunning">Scanning...</span>
+                            </button>
+                            <img src="img/throbber.gif" ng-show="deauthRunning"/>
+                        </div>
+                        <br/>
+                        <p class="alert well-sm alert-danger" ng-show="!deauthRunning && deauthFrames >= deauthThreshold">
+                            <b>ALERT:</b> {{ deauthFrames }} deauth/disassoc frames captured - possible deauth attack!
+                        </p>
+                        <p class="alert well-sm alert-success" ng-show="!deauthRunning && deauthFrames > 0 && deauthFrames < deauthThreshold">
+                            {{ deauthFrames }} frames captured - below alert threshold.
+                        </p>
+                        <table class="table table-hover" ng-show="deauthSources.length">
+                            <thead>
+                                <tr>
+                                    <th>Source MAC</th>
+                                    <th>Frames</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="src in deauthSources">
+                                    <td class="autoselect">{{ src.mac }}</td>
+                                    <td>{{ src.count }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ DEVICE FINGERPRINT (#24) ============ -->
+    <div class="tab-pane fade" id="sec-fingerprint">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            Device Vendor Fingerprinting
+                            <span class="pull-right">
+                                <button class="btn btn-default btn-xs btn-fixed-length" ng-click="getFingerprintData()">Refresh</button>
+                            </span>
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+                        <p class="text-muted">
+                            Unique devices (APs + clients) from the latest scan with vendor OUI lookup and PineAP log activity.
+                            Load the OUI database from <b>Recon</b> (or <b>Networking -&gt; OUI Lookup</b>) to see vendor names.
+                        </p>
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>MAC</th>
+                                    <th>Type</th>
+                                    <th>SSID</th>
+                                    <th>Channel</th>
+                                    <th>Vendor (OUI)</th>
+                                    <th>Log Events</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="device in devices">
+                                    <td class="autoselect">{{ device.mac }}</td>
+                                    <td>{{ device.kind }}</td>
+                                    <td>{{ device.ssid }}</td>
+                                    <td>{{ device.channel }}</td>
+                                    <td class="autoselect">{{ vendorMap[device.mac] }}</td>
+                                    <td>{{ device.events }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p ng-show="!devices.length">No devices found. Run a recon scan first.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

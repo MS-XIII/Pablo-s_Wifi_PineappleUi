@@ -1,0 +1,1049 @@
+/* ==========================================================================
+   WiFi Pineapple - Modern Dark Sleek Theme
+   Loaded AFTER bootstrap.min.css and main.css so it safely overrides both.
+   --------------------------------------------------------------------------
+   Palette: deep charcoal surfaces, cyber-mint + cyan accent gradient,
+   terminal-style mono for logs, glass navbar, glow-on-focus controls.
+   ========================================================================== */
+
+:root {
+    /* Surfaces */
+    --pineap-bg:        #0a0d12;
+    --pineap-bg-2:      #0e1219;
+    --pineap-surface:   #12161f;
+    --pineap-surface-2: #171c27;
+    --pineap-hover:     #1b2230;
+    --pineap-active:    #16202b;
+
+    /* Borders */
+    --pineap-border:      #232b3b;
+    --pineap-border-soft: #1a212e;
+
+    /* Text */
+    --pineap-text:       #e8ecf4;
+    --pineap-text-2:     #a2acbf;
+    --pineap-muted:      #66707f;
+
+    /* Accents */
+    --pineap-accent:     #00e5a0;
+    --pineap-accent-2:   #00b3ff;
+    --pineap-accent-dim: rgba(0, 229, 160, .12);
+    --pineap-grad:       linear-gradient(135deg, #00e5a0 0%, #00b3ff 100%);
+    --pineap-danger:     #ff5c72;
+    --pineap-warning:    #ffc857;
+    --pineap-info:       #4dc3ff;
+    --pineap-success:    #00e5a0;
+
+    /* Shape / depth */
+    --pineap-radius:    14px;
+    --pineap-radius-sm: 8px;
+    --pineap-shadow:    0 8px 24px rgba(0, 0, 0, .35);
+    --pineap-shadow-lg: 0 24px 64px rgba(0, 0, 0, .6);
+
+    /* Typography */
+    --pineap-font:  "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --pineap-mono:  "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace;
+}
+
+/* --------------------------------------------------------------------------
+   Base
+   -------------------------------------------------------------------------- */
+html {
+    font-size: 14px;
+}
+
+body {
+    font-family: var(--pineap-font);
+    color: var(--pineap-text);
+    background-color: var(--pineap-bg);
+    background-image:
+        radial-gradient(1200px 640px at 85% -10%, rgba(0, 229, 160, .055), transparent 60%),
+        radial-gradient(1000px 520px at -5% -5%, rgba(0, 179, 255, .045), transparent 55%);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: .1px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--pineap-text);
+    font-weight: 600;
+    letter-spacing: .2px;
+}
+
+a {
+    color: var(--pineap-accent-2);
+    transition: color .15s ease;
+}
+
+a:hover, a:focus {
+    color: #7fd8ff;
+    text-decoration: none;
+}
+
+hr {
+    border-top-color: var(--pineap-border-soft);
+}
+
+::selection {
+    background: rgba(0, 229, 160, .28);
+    color: #ffffff;
+}
+
+/* Text helpers */
+.text-muted   { color: var(--pineap-muted) !important; }
+.text-info    { color: var(--pineap-info) !important; }
+.text-success { color: var(--pineap-success) !important; }
+.text-warning { color: var(--pineap-warning) !important; }
+.text-danger  { color: var(--pineap-danger) !important; }
+.text-primary { color: var(--pineap-accent) !important; }
+
+/* Scrollbars (WebKit/Blink) */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+::-webkit-scrollbar-track {
+    background: var(--pineap-bg);
+}
+::-webkit-scrollbar-thumb {
+    background: #2b3448;
+    border-radius: 999px;
+    border: 2px solid var(--pineap-bg);
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--pineap-accent);
+}
+::-webkit-scrollbar-corner {
+    background: var(--pineap-bg);
+}
+
+/* --------------------------------------------------------------------------
+   Navbar (glass)
+   -------------------------------------------------------------------------- */
+.navbar-default {
+    background-color: rgba(13, 17, 24, .86);
+    border-color: var(--pineap-border);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 1px 0 rgba(0, 229, 160, .06), 0 10px 30px rgba(0, 0, 0, .4);
+}
+
+.navbar-default .navbar-brand {
+    color: var(--pineap-text);
+    font-weight: 700;
+    letter-spacing: .3px;
+    transition: color .15s ease;
+}
+
+.navbar-default .navbar-brand:hover,
+.navbar-default .navbar-brand:focus {
+    color: var(--pineap-accent);
+    background-color: transparent;
+}
+
+/* The brand is a black/white pineapple glyph in the original assets -
+   invert it so it reads as a light mark on the dark bar. */
+.brand-logo {
+    content: url('/img/logo.png');
+    filter: invert(1) drop-shadow(0 0 6px rgba(0, 229, 160, .35));
+    opacity: .95;
+}
+
+.brand-text::after {
+    content: 'WiFi Pineapple';
+    padding-top: 3px;
+    padding-left: 5px;
+    float: right;
+    background: var(--pineap-grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: var(--pineap-accent);
+    font-weight: 800;
+    letter-spacing: .6px;
+}
+
+/* Dark icon assets in the top bar need inverting too */
+.navbar-top-links img {
+    filter: invert(1);
+    opacity: .9;
+}
+
+.navbar-default .navbar-nav > li > a {
+    color: var(--pineap-text-2);
+}
+
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+    color: var(--pineap-accent);
+    background-color: var(--pineap-hover);
+}
+
+.navbar-default .navbar-nav > .open > a,
+.navbar-default .navbar-nav > .open > a:hover,
+.navbar-default .navbar-nav > .open > a:focus {
+    color: var(--pineap-accent);
+    background-color: var(--pineap-hover);
+}
+
+.navbar-default .navbar-toggle {
+    border-color: var(--pineap-border);
+}
+
+.navbar-default .navbar-toggle:hover,
+.navbar-default .navbar-toggle:focus {
+    background-color: var(--pineap-hover);
+}
+
+.navbar-default .navbar-toggle .icon-bar {
+    background-color: var(--pineap-text-2);
+}
+
+.navbar-default .navbar-collapse,
+.navbar-default .navbar-form {
+    border-color: var(--pineap-border);
+}
+
+.caret {
+    border-top-color: var(--pineap-muted);
+}
+
+.caret-reversed {
+    border-bottom-color: var(--pineap-text-2);
+}
+
+/* --------------------------------------------------------------------------
+   Sidebar
+   -------------------------------------------------------------------------- */
+.sidebar {
+    background-color: var(--pineap-surface);
+    border-right: 1px solid var(--pineap-border);
+}
+
+.sidebar ul li {
+    border-bottom-color: var(--pineap-border-soft);
+    transition: background-color .15s ease;
+}
+
+.sidebar ul li a {
+    color: var(--pineap-text-2);
+    font-weight: 500;
+    transition: color .15s ease, background-color .15s ease, padding-left .15s ease;
+}
+
+.sidebar ul li a:hover {
+    color: var(--pineap-text);
+    background-color: var(--pineap-hover);
+    padding-left: 18px;
+}
+
+.sidebar .active {
+    background: linear-gradient(90deg, var(--pineap-accent-dim), transparent 85%);
+    box-shadow: inset 3px 0 0 var(--pineap-accent);
+}
+
+.sidebar .active a {
+    color: var(--pineap-accent);
+    font-weight: 700;
+}
+
+.sidebar .active a:hover {
+    color: var(--pineap-accent);
+}
+
+.module-nav li a {
+    margin-left: 10px;
+}
+
+.module-nav li:hover {
+    background-color: var(--pineap-hover);
+}
+
+.module-icon {
+    opacity: .8;
+}
+
+/* Module "badge" letters when no icon exists */
+.module-text {
+    color: var(--pineap-text-2);
+    font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   Module content area
+   -------------------------------------------------------------------------- */
+.module-content {
+    background-color: var(--pineap-bg-2);
+    border-left: 1px solid var(--pineap-border);
+}
+
+/* --------------------------------------------------------------------------
+   Panels (cards)
+   -------------------------------------------------------------------------- */
+.panel {
+    background-color: var(--pineap-surface);
+    border: 1px solid var(--pineap-border);
+    border-radius: var(--pineap-radius);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .28);
+    transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+
+.panel:hover {
+    border-color: #2e3950;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, .4);
+}
+
+.panel-default {
+    border-color: var(--pineap-border);
+}
+
+.panel-default > .panel-heading {
+    color: var(--pineap-text);
+    background-color: var(--pineap-surface-2);
+    border-color: var(--pineap-border-soft);
+    border-radius: var(--pineap-radius) var(--pineap-radius) 0 0;
+    padding: 13px 16px;
+}
+
+.panel-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: var(--pineap-text-2);
+}
+
+.panel-title .btn {
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.panel-footer {
+    background-color: var(--pineap-surface-2);
+    border-top: 1px solid var(--pineap-border-soft);
+    color: var(--pineap-text-2);
+    border-radius: 0 0 var(--pineap-radius) var(--pineap-radius);
+}
+
+.panel-body {
+    color: var(--pineap-text);
+}
+
+/* Dashboard stat numbers */
+.panel-body > h2 {
+    margin: 10px 0 4px;
+    font-size: 44px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    background: var(--pineap-grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: var(--pineap-accent);
+}
+
+.panel-body .stat-link {
+    color: var(--pineap-text);
+    text-decoration: none;
+}
+
+.panel-body .stat-link:hover {
+    color: var(--pineap-accent);
+}
+
+/* Accordion groups */
+.panel-group .panel {
+    border-radius: var(--pineap-radius);
+}
+
+.panel-group .panel-heading {
+    cursor: pointer;
+    transition: background-color .15s ease;
+}
+
+.panel-group .panel-heading:hover {
+    background-color: var(--pineap-hover);
+}
+
+#accordion .panel-heading .panel-title:after {
+    filter: invert(.75);
+    opacity: .8;
+}
+
+/* --------------------------------------------------------------------------
+   Tables
+   -------------------------------------------------------------------------- */
+.table {
+    color: var(--pineap-text);
+}
+
+.table > thead > tr > th {
+    border-bottom: 1px solid var(--pineap-border);
+    color: var(--pineap-muted);
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .7px;
+    padding: 12px 8px;
+}
+
+.table > tbody > tr > td {
+    border-top: 1px solid var(--pineap-border-soft);
+    padding: 10px 8px;
+    vertical-align: middle;
+}
+
+.table > tbody > tr.active > td {
+    background-color: var(--pineap-hover);
+}
+
+.table-hover > tbody > tr:hover,
+.table-hover > tbody > tr.active:hover > td {
+    background-color: var(--pineap-hover);
+    color: var(--pineap-text);
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, .022);
+}
+
+.table-bordered,
+.table-bordered > thead > tr > th,
+.table-bordered > thead > tr > td,
+.table-bordered > tbody > tr > th,
+.table-bordered > tbody > tr > td,
+.table-bordered > tfoot > tr > th,
+.table-bordered > tfoot > tr > td {
+    border-color: var(--pineap-border);
+}
+
+.module-table > * > tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, .03);
+}
+
+@media (max-width: 767px) {
+    .table-responsive {
+        border-color: var(--pineap-border);
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Forms
+   -------------------------------------------------------------------------- */
+.form-control {
+    color: var(--pineap-text);
+    background-color: #0d1117;
+    border: 1px solid var(--pineap-border);
+    border-radius: var(--pineap-radius-sm);
+    box-shadow: none;
+    transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+.form-control:focus {
+    border-color: var(--pineap-accent);
+    background-color: #0f141b;
+    box-shadow: 0 0 0 3px rgba(0, 229, 160, .14);
+}
+
+.form-control::placeholder {
+    color: var(--pineap-muted);
+}
+
+.form-control[disabled],
+.form-control[readonly],
+fieldset[disabled] .form-control {
+    background-color: var(--pineap-surface-2);
+    color: var(--pineap-muted);
+    border-color: var(--pineap-border-soft);
+}
+
+select.form-control {
+    background-color: #0d1117;
+}
+
+select.form-control option {
+    background-color: var(--pineap-surface-2);
+    color: var(--pineap-text);
+}
+
+textarea.form-control {
+    border-radius: var(--pineap-radius-sm);
+}
+
+.input-group-addon {
+    color: var(--pineap-text-2);
+    background-color: var(--pineap-surface-2);
+    border: 1px solid var(--pineap-border);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+    accent-color: var(--pineap-accent);
+}
+
+label {
+    color: var(--pineap-text);
+}
+
+/* --------------------------------------------------------------------------
+   Buttons
+   -------------------------------------------------------------------------- */
+.btn {
+    border-radius: var(--pineap-radius-sm);
+    font-weight: 500;
+    letter-spacing: .2px;
+    transition: all .18s ease;
+}
+
+.btn-default {
+    color: var(--pineap-text);
+    background-color: var(--pineap-surface-2);
+    border-color: var(--pineap-border);
+}
+
+.btn-default:hover,
+.btn-default:focus,
+.btn-default.focus {
+    color: var(--pineap-text);
+    background-color: var(--pineap-hover);
+    border-color: #35425c;
+    box-shadow: 0 0 0 3px rgba(0, 229, 160, .07);
+}
+
+.btn-default:active,
+.btn-default.active,
+.open > .dropdown-toggle.btn-default {
+    color: var(--pineap-accent);
+    background-color: var(--pineap-hover);
+    border-color: var(--pineap-accent);
+    box-shadow: none;
+}
+
+.btn-default.disabled,
+.btn-default[disabled],
+fieldset[disabled] .btn-default,
+.btn-default.disabled:hover,
+.btn-default[disabled]:hover,
+fieldset[disabled] .btn-default:hover {
+    background-color: var(--pineap-surface-2);
+    border-color: var(--pineap-border-soft);
+    color: var(--pineap-muted);
+    opacity: .6;
+}
+
+.btn-primary {
+    color: #00281b;
+    background-color: var(--pineap-accent);
+    background-image: var(--pineap-grad);
+    border-color: transparent;
+    font-weight: 700;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary.focus {
+    color: #00281b;
+    background-color: #00f0aa;
+    background-image: linear-gradient(135deg, #00f0aa 0%, #00c2ff 100%);
+    border-color: transparent;
+    box-shadow: 0 0 0 3px rgba(0, 229, 160, .18), 0 6px 18px rgba(0, 229, 160, .25);
+}
+
+.btn-primary:active,
+.btn-primary.active,
+.open > .dropdown-toggle.btn-primary {
+    color: #00281b;
+    background-image: var(--pineap-grad);
+    border-color: transparent;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, .25);
+}
+
+.btn-success {
+    color: #00281b;
+    background-image: var(--pineap-grad);
+    border-color: transparent;
+    font-weight: 700;
+}
+
+.btn-success:hover,
+.btn-success:focus {
+    color: #00281b;
+    background-image: linear-gradient(135deg, #00f0aa 0%, #00c2ff 100%);
+    border-color: transparent;
+    box-shadow: 0 0 0 3px rgba(0, 229, 160, .18), 0 6px 18px rgba(0, 229, 160, .25);
+}
+
+.btn-danger {
+    color: #ffffff;
+    background-color: var(--pineap-danger);
+    border-color: transparent;
+}
+
+.btn-danger:hover,
+.btn-danger:focus {
+    color: #ffffff;
+    background-color: #ff6b80;
+    border-color: transparent;
+    box-shadow: 0 0 0 3px rgba(255, 92, 114, .16);
+}
+
+.btn-info {
+    color: #ffffff;
+    background-color: var(--pineap-info);
+    border-color: transparent;
+}
+
+.btn-info:hover,
+.btn-info:focus {
+    color: #ffffff;
+    background-color: #6fd3ff;
+    border-color: transparent;
+}
+
+.btn-warning {
+    color: #1a1200;
+    background-color: var(--pineap-warning);
+    border-color: transparent;
+}
+
+.btn-warning:hover,
+.btn-warning:focus {
+    color: #1a1200;
+    background-color: #ffd273;
+    border-color: transparent;
+}
+
+.btn-link {
+    color: var(--pineap-accent-2);
+}
+
+.btn-link:hover,
+.btn-link:focus {
+    color: #7fd8ff;
+}
+
+.btn .caret {
+    border-top-color: currentColor;
+}
+
+/* --------------------------------------------------------------------------
+   Dropdowns
+   -------------------------------------------------------------------------- */
+.dropdown-menu {
+    background-color: var(--pineap-surface-2);
+    border: 1px solid var(--pineap-border);
+    border-radius: var(--pineap-radius-sm);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, .55);
+    padding: 6px 0;
+}
+
+.dropdown-menu > li > a {
+    color: var(--pineap-text-2);
+    padding: 7px 20px;
+    transition: background-color .12s ease, color .12s ease;
+}
+
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus {
+    color: var(--pineap-accent);
+    background-color: var(--pineap-hover);
+}
+
+.dropdown-menu .divider {
+    background-color: var(--pineap-border);
+}
+
+.dropdown-menu > .active > a,
+.dropdown-menu > .active > a:hover,
+.dropdown-menu > .active > a:focus {
+    color: var(--pineap-accent);
+    background-color: var(--pineap-hover);
+}
+
+.dropdown-menu > .disabled > a,
+.dropdown-menu > .disabled > a:hover,
+.dropdown-menu > .disabled > a:focus {
+    color: var(--pineap-muted);
+}
+
+@media (max-width: 768px) {
+    .dropdown-menu-top {
+        background-color: var(--pineap-surface-2) !important;
+        border-color: var(--pineap-border) !important;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Alerts
+   -------------------------------------------------------------------------- */
+.alert {
+    border-radius: var(--pineap-radius-sm);
+    border-width: 1px;
+    font-size: 13.5px;
+}
+
+.alert-success {
+    color: #86f2c9;
+    background-color: rgba(0, 229, 160, .1);
+    border-color: rgba(0, 229, 160, .32);
+}
+
+.alert-info {
+    color: #93dcff;
+    background-color: rgba(0, 179, 255, .09);
+    border-color: rgba(0, 179, 255, .32);
+}
+
+.alert-warning {
+    color: #ffd98a;
+    background-color: rgba(255, 200, 87, .09);
+    border-color: rgba(255, 200, 87, .32);
+}
+
+.alert-danger {
+    color: #ff9aa8;
+    background-color: rgba(255, 92, 114, .09);
+    border-color: rgba(255, 92, 114, .32);
+}
+
+.alert .alert-link {
+    color: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   Tabs
+   -------------------------------------------------------------------------- */
+.nav-tabs {
+    border-bottom: 1px solid var(--pineap-border);
+}
+
+.nav-tabs > li > a {
+    color: var(--pineap-text-2);
+    border: 1px solid transparent;
+    border-radius: var(--pineap-radius-sm) var(--pineap-radius-sm) 0 0;
+    background-color: transparent;
+    font-weight: 500;
+    transition: color .15s ease, background-color .15s ease;
+}
+
+.nav-tabs > li > a:hover,
+.nav-tabs > li > a:focus {
+    color: var(--pineap-text);
+    background-color: var(--pineap-hover);
+    border-color: var(--pineap-border) var(--pineap-border) var(--pineap-border);
+}
+
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:hover,
+.nav-tabs > li.active > a:focus {
+    color: var(--pineap-accent);
+    cursor: default;
+    background-color: var(--pineap-surface);
+    border: 1px solid var(--pineap-border);
+    border-bottom-color: transparent;
+    font-weight: 700;
+    box-shadow: inset 0 2px 0 var(--pineap-accent);
+}
+
+.tab-pane {
+    padding: 25px;
+    background-color: var(--pineap-surface);
+    border: 1px solid var(--pineap-border);
+    border-top: 0;
+    border-radius: 0 0 var(--pineap-radius) var(--pineap-radius);
+}
+
+/* --------------------------------------------------------------------------
+   Badges / progress / wells
+   -------------------------------------------------------------------------- */
+.badge {
+    background-color: var(--pineap-accent-dim);
+    color: var(--pineap-accent);
+    border: 1px solid rgba(0, 229, 160, .3);
+    font-weight: 700;
+}
+
+.progress {
+    height: 10px;
+    background-color: var(--pineap-surface-2);
+    border-radius: 999px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, .45);
+    overflow: hidden;
+}
+
+.progress-bar {
+    background-image: var(--pineap-grad);
+    box-shadow: none;
+    border-radius: 999px;
+}
+
+.well {
+    background-color: var(--pineap-surface-2);
+    border-color: var(--pineap-border);
+    box-shadow: none;
+    border-radius: var(--pineap-radius-sm);
+}
+
+/* --------------------------------------------------------------------------
+   Code / pre (terminal look)
+   -------------------------------------------------------------------------- */
+pre {
+    color: #c9d4e3;
+    background-color: #0b0f16;
+    border: 1px solid var(--pineap-border);
+    border-radius: var(--pineap-radius-sm);
+    font-family: var(--pineap-mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+}
+
+code {
+    color: #ff9aa8;
+    background-color: rgba(255, 92, 114, .12);
+    border-radius: 4px;
+}
+
+kbd {
+    background-color: var(--pineap-surface-2);
+    color: var(--pineap-text);
+    box-shadow: none;
+    border: 1px solid var(--pineap-border);
+}
+
+/* --------------------------------------------------------------------------
+   Modals
+   -------------------------------------------------------------------------- */
+.modal-content {
+    background-color: var(--pineap-surface);
+    border: 1px solid var(--pineap-border);
+    border-radius: var(--pineap-radius);
+    box-shadow: var(--pineap-shadow-lg);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--pineap-border-soft);
+    padding: 18px 22px;
+}
+
+.modal-body {
+    padding: 20px 22px;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--pineap-border-soft);
+    padding: 14px 22px;
+}
+
+.modal-backdrop.in {
+    opacity: .72;
+}
+
+.close {
+    color: var(--pineap-text-2);
+    text-shadow: none;
+    opacity: .85;
+    transition: color .15s ease, opacity .15s ease, transform .15s ease;
+}
+
+.close:hover,
+.close:focus {
+    color: var(--pineap-accent);
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+/* Login dialog */
+#loginModal .modal-dialog {
+    max-width: 420px;
+}
+
+#loginModal .modal-content {
+    padding: 10px 18px 18px;
+    border: 1px solid var(--pineap-border);
+    background: linear-gradient(180deg, var(--pineap-surface-2) 0%, var(--pineap-surface) 100%);
+    box-shadow: 0 0 0 1px rgba(0, 229, 160, .05), var(--pineap-shadow-lg);
+}
+
+#loginModal .modal-title {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    background: var(--pineap-grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: var(--pineap-accent);
+}
+
+#loginModal .login-logo {
+    filter: invert(1) drop-shadow(0 0 10px rgba(0, 229, 160, .25));
+    opacity: .92;
+}
+
+/* Setup wizard modals */
+#welcomeModal .modal-content h1,
+#changesModal .modal-content h1,
+#verificationModal .modal-content h1 {
+    background: var(--pineap-grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: var(--pineap-accent);
+    font-weight: 800;
+}
+
+/* Dark pineapple logo on dark modal surfaces */
+#welcomeModal .modal-body img,
+#changesModal .modal-body img {
+    filter: invert(1) drop-shadow(0 0 8px rgba(0, 229, 160, .2));
+    opacity: .92;
+}
+
+/* --------------------------------------------------------------------------
+   Misc components
+   -------------------------------------------------------------------------- */
+.label-default {
+    background-color: var(--pineap-surface-2);
+    color: var(--pineap-text-2);
+    border: 1px solid var(--pineap-border);
+}
+
+.thumbnail {
+    background-color: var(--pineap-surface);
+    border-color: var(--pineap-border);
+    border-radius: var(--pineap-radius-sm);
+}
+
+.img-thumbnail {
+    background-color: var(--pineap-surface);
+    border-color: var(--pineap-border);
+}
+
+.list-group-item {
+    background-color: var(--pineap-surface);
+    border-color: var(--pineap-border-soft);
+    color: var(--pineap-text);
+}
+
+a.list-group-item,
+button.list-group-item {
+    color: var(--pineap-text-2);
+}
+
+a.list-group-item:hover,
+button.list-group-item:hover {
+    background-color: var(--pineap-hover);
+    color: var(--pineap-text);
+}
+
+.pagination > li > a,
+.pagination > li > span {
+    background-color: var(--pineap-surface);
+    border-color: var(--pineap-border);
+    color: var(--pineap-text-2);
+}
+
+.pagination > li > a:hover,
+.pagination > li > span:hover {
+    background-color: var(--pineap-hover);
+    border-color: var(--pineap-border);
+    color: var(--pineap-accent);
+}
+
+.pagination > .active > a,
+.pagination > .active > span {
+    background-image: var(--pineap-grad);
+    border-color: transparent;
+    color: #00281b;
+    font-weight: 700;
+}
+
+/* Buttons inside table rows stay compact */
+.btn-xs {
+    border-radius: 6px;
+}
+
+/* --------------------------------------------------------------------------
+   New modules (AI, Security, Notify, Tor)
+   -------------------------------------------------------------------------- */
+.ai-output {
+    background-color: #0b0f16;
+    border: 1px solid var(--pineap-border);
+    border-radius: var(--pineap-radius-sm);
+    color: #c9d4e3;
+    font-family: var(--pineap-mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+    padding: 12px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.margin-left {
+    margin-left: 10px;
+}
+
+/* Tabs used inside modules (AI / Security / Advanced) */
+.tabs-block > li > a {
+    padding: 8px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: .3px;
+}
+
+/* Security threat badges */
+.threat-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.threat-badge.high {
+    background: rgba(255, 92, 114, .15);
+    color: var(--pineap-danger);
+    border: 1px solid rgba(255, 92, 114, .4);
+}
+
+.threat-badge.medium {
+    background: rgba(255, 200, 87, .12);
+    color: var(--pineap-warning);
+    border: 1px solid rgba(255, 200, 87, .4);
+}
+
+.threat-badge.low {
+    background: rgba(0, 229, 160, .1);
+    color: var(--pineap-success);
+    border: 1px solid rgba(0, 229, 160, .35);
+}
+
+/* Channel selector chips in the deauth amplifier */
+.btn-group .btn-xs.btn-primary {
+    color: #00281b;
+}
+
+/* Smooth dropdown appearance */
+.dropdown.open .dropdown-menu {
+    animation: pineap-drop .16s ease-out;
+}
+
+@keyframes pineap-drop {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -168,6 +168,88 @@
         </div>
     </div>
 </div>
+<div class="row" ng-controller="PineAPToolsController">
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">
+                    Multi-Interface PineAP
+                    <span class="pull-right">
+                        <button class="btn btn-default btn-xs btn-fixed-length" ng-click="getInterfaces()">Refresh</button>
+                    </span>
+                </h3>
+            </div>
+            <div class="panel-body">
+                <p class="text-muted">
+                    PineAP normally uses a single monitor interface. Assign a <b>secondary interface</b> (e.g. a 5GHz
+                    MT7612U adapter) and start it in monitor mode to run multi-band operations.
+                </p>
+                <div class="input-group margin-bottom">
+                    <span class="fixed-addon-width-3 input-group-addon">Current</span>
+                    <input type="text" class="form-control" ng-model="currentInterface" disabled>
+                </div>
+                <div class="input-group margin-bottom">
+                    <span class="fixed-addon-width-3 input-group-addon">Secondary</span>
+                    <select class="form-control" ng-model="secondaryInterface" ng-options="iface.name for iface in interfaces track by iface.name">
+                        <option value="">-- select interface --</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <button class="btn btn-default" ng-click="setSecondaryInterface()" ng-disabled="!secondaryInterface">Set Secondary</button>
+                    <button class="btn btn-default" ng-click="startSecondaryMonitor()" ng-disabled="ifaceBusy || !secondaryInterface">Start Monitor</button>
+                    <button class="btn btn-default" ng-click="stopSecondaryMonitor()" ng-disabled="ifaceBusy || !secondaryInterface">Stop Monitor</button>
+                </div>
+                <pre class="scrollable-pre" ng-show="ifaceOutput">{{ ifaceOutput }}</pre>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Deauth Amplifier</h3>
+            </div>
+            <div class="panel-body">
+                <p class="text-muted">
+                    Fires repeated deauth bursts across multiple channels (channel-hop combo) at a target AP's clients.
+                    Requires PineAP to be running.
+                </p>
+                <div class="form-group">
+                    <label>Target BSSID</label>
+                    <input class="form-control" type="text" ng-model="amp.bssid" placeholder="AA:BB:CC:DD:EE:FF"/>
+                </div>
+                <div class="form-group">
+                    <label>Client MACs (one per line)</label>
+                    <textarea class="form-control" rows="4" ng-model="amp.clientsText" placeholder="11:22:33:44:55:66&#10;aa:bb:cc:dd:ee:ff" spellcheck="false"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Channels</label>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-default btn-xs" ng-repeat="channel in channelOptions" ng-click="toggleChannel(channel)" ng-class="{ 'btn-primary': isChannelSelected(channel) }">{{ channel }}</button>
+                    </div>
+                </div>
+                <div class="form-inline">
+                    <div class="form-group">
+                        <label>Multiplier</label>
+                        <select class="form-control" ng-model="amp.multiplier" ng-options="m for m in [1,2,3,4,5,6,7,8,9,10]"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Bursts</label>
+                        <select class="form-control" ng-model="amp.bursts" ng-options="b for b in [1,2,3,4,5,10]"></select>
+                    </div>
+                </div>
+                <br/>
+                <button class="btn btn-primary" ng-click="startAmplifier()" ng-disabled="ampRunning">
+                    <span ng-hide="ampRunning">Start Amplifier</span>
+                    <span ng-show="ampRunning">Running...</span>
+                </button>
+                <button class="btn btn-danger" ng-click="stopAmplifier()" ng-show="ampRunning">Stop</button>
+                <img src="img/throbber.gif" ng-show="ampRunning"/>
+                <p class="alert well-sm alert-danger" ng-show="ampError">{{ ampError }}</p>
+                <pre class="scrollable-pre" ng-show="ampSummary">{{ ampSummary | json }}</pre>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="row">
     <div class="col-md-12" ng-controller="PineAPEnterpriseController">
         <div class="panel panel-default">

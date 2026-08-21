@@ -1,0 +1,74 @@
+<div ng-controller="NotifyController">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Telegram &amp; Discord Notifications</h3>
+                </div>
+                <div class="panel-body">
+                    <p class="text-muted">
+                        Forward PineAP events, deauth attack alerts and security findings to <b>Telegram</b>, <b>Discord</b>,
+                        or <b>both</b> at the same time. Config is stored on-device at <code>/etc/pineapple/notify.json</code>.
+                    </p>
+
+                    <div class="checkbox">
+                        <label><input type="checkbox" ng-model="settings.telegramEnabled"> Enable Telegram notifications</label>
+                    </div>
+                    <div class="form-group">
+                        <label>Bot Token</label>
+                        <input class="form-control" type="password" ng-model="settings.telegramToken" placeholder="123456:ABC-DEF..."/>
+                    </div>
+                    <div class="form-group">
+                        <label>Chat ID</label>
+                        <input class="form-control" type="text" ng-model="settings.telegramChatId" placeholder="123456789"/>
+                        <small class="text-muted">Your personal chat id (message @userinfobot to find it) or a group id.</small>
+                    </div>
+                    <button class="btn btn-default" ng-click="testTelegram()" ng-disabled="sending || !settings.telegramToken || !settings.telegramChatId">Test Telegram</button>
+
+                    <hr>
+
+                    <div class="checkbox">
+                        <label><input type="checkbox" ng-model="settings.discordEnabled"> Enable Discord notifications</label>
+                    </div>
+                    <div class="form-group">
+                        <label>Webhook URL</label>
+                        <input class="form-control" type="text" ng-model="settings.discordWebhook" placeholder="https://discord.com/api/webhooks/..."/>
+                        <small class="text-muted">Create a webhook in your Discord channel: Server Settings -&gt; Integrations -&gt; Webhooks.</small>
+                    </div>
+                    <button class="btn btn-default" ng-click="testDiscord()" ng-disabled="sending || !settings.discordWebhook">Test Discord</button>
+
+                    <hr>
+
+                    <button class="btn btn-primary" ng-click="saveSettings()" ng-disabled="!loaded">Save Settings</button>
+                    <p class="alert well-sm alert-success" ng-show="saved">Settings saved.</p>
+                    <p class="alert well-sm alert-info" ng-show="sendResult">{{ sendResult }}</p>
+
+                    <hr>
+
+                    <h4>Send a test notification now</h4>
+                    <div class="input-group">
+                        <input class="form-control" type="text" ng-model="message" placeholder="Message to send to all enabled channels"/>
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" ng-click="sendMessage()" ng-disabled="sending">Send</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">What gets notified</h3>
+                </div>
+                <div class="panel-body">
+                    <ul>
+                        <li><b>Deauth attack detector</b> (Security module) alerts on deauth storms.</li>
+                        <li><b>Rogue AP / Evil twin detection</b> (Security module) alerts on spoofed networks.</li>
+                        <li><b>PineAP</b> events when you trigger notifications from tools.</li>
+                        <li>Manual notifications from the panel or other modules.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

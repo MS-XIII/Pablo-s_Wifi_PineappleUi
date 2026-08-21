@@ -121,6 +121,8 @@
                         <span class="text-success" ng-show="dropdownMessage">
                             {{ dropdownMessage }}
                         </span>
+                        <span class="text-success" ng-show="evilTwinMessage">{{ evilTwinMessage }}</span>
+                        <span class="text-danger" ng-show="evilTwinError">{{ evilTwinError }}</span>
                     </h3>
                 </div>
                 <div class="table-responsive">
@@ -150,6 +152,7 @@
                             </td>
                             <td>
                                 <clone-button disable="accessPoint.encryption.includes('Enterprise') === false && accessPoint.encryption.includes('WPA') === false || !accessPoint.ssid || (running && !paused)" hook="encryption" content="accessPoint"></clone-button>
+                                <button type="button" class="btn btn-xs btn-default" title="Clone as evil twin (impersonate SSID + BSSID)" ng-click="cloneEvilTwin(accessPoint)" ng-disabled="!accessPoint.ssid || (running && !paused)">Twin</button>
                                 {{ accessPoint.encryption }}
                             </td>
                             <td>{{ (accessPoint.wps == 1) ? "Yes" : "No" }}</td>

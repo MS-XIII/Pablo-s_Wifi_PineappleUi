@@ -1,0 +1,12 @@
+{
+    "author": "WPC",
+    "description": "AI powered tools: handshake advisor, target scoring, captive portal generator, SSID pool generator, device nicknamer, anomaly detector, chat assistant, module suggester, threat intel, honeypot tuner and WPA/WPS risk assessment.",
+    "devices": [
+        "nano",
+        "tetra"
+    ],
+    "system": true,
+    "title": "AI Tools",
+    "version": "1.0",
+    "index": 16
+}

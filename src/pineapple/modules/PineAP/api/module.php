@@ -171,6 +171,42 @@ class PineAP extends SystemModule
             case 'downloadHashcatHashes':
                 $this->downloadHashcatHashes();
                 break;
+
+            case 'getPineAPInterfaces':
+                $this->getPineAPInterfaces();
+                break;
+
+            case 'getSecondaryInterface':
+                $this->getSecondaryInterface();
+                break;
+
+            case 'setSecondaryInterface':
+                $this->setSecondaryInterface();
+                break;
+
+            case 'startSecondaryMonitor':
+                $this->startSecondaryMonitor();
+                break;
+
+            case 'stopSecondaryMonitor':
+                $this->stopSecondaryMonitor();
+                break;
+
+            case 'deauthAmplifier':
+                $this->deauthAmplifier();
+                break;
+
+            case 'getDeauthAmplifierStatus':
+                $this->getDeauthAmplifierStatus();
+                break;
+
+            case 'stopDeauthAmplifier':
+                $this->stopDeauthAmplifier();
+                break;
+
+            case 'cloneEvilTwin':
+                $this->cloneEvilTwin();
+                break;
         }
     }
 
@@ -882,5 +918,190 @@ class PineAP extends SystemModule
             );
         }
         unlink('/tmp/inject');
+    }
+
+    // ------------------------------------------------------------------
+    // Multi-interface PineAP (#35)
+    // ------------------------------------------------------------------
+
+    private function getPineAPInterfaces()
+    {
+        $interfaces = array();
+        exec('ls /sys/class/net/', $netIfaces);
+        foreach ($netIfaces as $iface) {
+            if (strpos($iface, 'wlan') !== 0 && strpos($iface, 'mon') !== 0) {
+                continue;
+            }
+            $type = '';
+            exec('iw dev ' . $iface . ' info 2>/dev/null | grep "type "', $typeOut);
+            if (!empty($typeOut)) {
+                $type = trim(str_replace('type', '', $typeOut[0]));
+            }
+            $interfaces[] = array(
+                'name' => $iface,
+                'type' => $type,
+            );
+        }
+
+        $current = $this->uciGet('pineap.@config[0].pineap_interface');
+        $secondary = $this->uciGet('pineap.@config[0].secondary_interface');
+
+        $this->response = array(
+            'success' => true,
+            'interfaces' => $interfaces,
+            'current' => $current,
+            'secondary' => $secondary,
+        );
+    }
+
+    private function getSecondaryInterface()
+    {
+        $this->response = array(
+            'success' => true,
+            'secondary' => $this->uciGet('pineap.@config[0].secondary_interface'),
+        );
+    }
+
+    private function setSecondaryInterface()
+    {
+        $interface = isset($this->request->interface) ? $this->request->interface : '';
+        if (empty($interface)) {
+            $this->error = 'No interface provided';
+            return;
+        }
+        $this->uciSet('pineap.@config[0].secondary_interface', $interface);
+        $this->response = array('success' => true, 'secondary' => $interface);
+    }
+
+    private function startSecondaryMonitor()
+    {
+        $interface = $this->uciGet('pineap.@config[0].secondary_interface');
+        if (empty($interface)) {
+            $this->error = 'No secondary interface configured. Set it first.';
+            return;
+        }
+
+        exec('airmon-ng start ' . escapeshellarg($interface) . ' 2>&1', $output);
+        $this->response = array('success' => true, 'output' => implode("\n", $output));
+    }
+
+    private function stopSecondaryMonitor()
+    {
+        $interface = $this->uciGet('pineap.@config[0].secondary_interface');
+        if (empty($interface)) {
+            $this->error = 'No secondary interface configured.';
+            return;
+        }
+
+        exec('airmon-ng stop ' . escapeshellarg($interface) . ' 2>&1', $output);
+        $this->response = array('success' => true, 'output' => implode("\n", $output));
+    }
+
+    // ------------------------------------------------------------------
+    // Deauth amplifier (#37) - burst + channel-hop combo
+    // ------------------------------------------------------------------
+
+    private function deauthAmplifier()
+    {
+        if (!$this->checkPineAP()) {
+            return;
+        }
+
+        $bssid = isset($this->request->bssid) ? $this->request->bssid : '';
+        $clients = isset($this->request->clients) ? $this->request->clients : array();
+        $channels = isset($this->request->channels) ? $this->request->channels : array(1, 6, 11);
+        $multiplier = isset($this->request->multiplier) ? intval($this->request->multiplier) : 2;
+        $bursts = isset($this->request->bursts) ? intval($this->request->bursts) : 3;
+
+        if (empty($bssid) || empty($clients)) {
+            $this->error = 'Target BSSID and client list are required.';
+            return;
+        }
+
+        $monitorInterface = $this->pineAPHelper->getPineapInterface();
+        $task = array(
+            'bssid' => $bssid,
+            'clients' => $clients,
+            'channels' => array_map('intval', $channels),
+            'multiplier' => $multiplier,
+            'bursts' => $bursts,
+            'interface' => $monitorInterface,
+        );
+
+        @unlink('/tmp/deauth_amp_result.json');
+        file_put_contents('/tmp/deauth_amp_task.json', json_encode($task));
+
+        $this->execBackground('php /pineapple/modules/PineAP/api/deauth_amp_worker.php');
+        $this->response = array('success' => true);
+    }
+
+    private function getDeauthAmplifierStatus()
+    {
+        if (!file_exists('/tmp/deauth_amp_result.json')) {
+            if (file_exists('/tmp/deauth_amp_task.json')) {
+                $this->response = array('running' => true, 'success' => true);
+            } else {
+                $this->response = array('running' => false, 'success' => true);
+            }
+            return;
+        }
+
+        $data = json_decode(@file_get_contents('/tmp/deauth_amp_result.json'), true);
+        @unlink('/tmp/deauth_amp_result.json');
+        @unlink('/tmp/deauth_amp_task.json');
+
+        if (is_array($data) && isset($data['error'])) {
+            $this->response = array('running' => false, 'error' => $data['error'], 'success' => true);
+        } else {
+            $this->response = array('running' => false, 'summary' => $data, 'success' => true);
+        }
+    }
+
+    private function stopDeauthAmplifier()
+    {
+        exec("pkill -f deauth_amp_worker.php", $output);
+        @unlink('/tmp/deauth_amp_task.json');
+        $this->response = array('success' => true);
+    }
+
+    // ------------------------------------------------------------------
+    // Evil twin auto-clone (#38)
+    // ------------------------------------------------------------------
+
+    private function cloneEvilTwin()
+    {
+        $ssid = isset($this->request->ssid) ? $this->request->ssid : '';
+        $bssid = isset($this->request->bssid) ? strtoupper($this->request->bssid) : '';
+        $channel = isset($this->request->channel) ? intval($this->request->channel) : 1;
+        $encryption = isset($this->request->encryption) ? $this->request->encryption : '';
+
+        if (empty($ssid) || empty($bssid)) {
+            $this->error = 'SSID and BSSID are required.';
+            return;
+        }
+
+        // Add the target SSID to the pool so it can be broadcast
+        if ($this->dbConnection) {
+            $created_date = date('Y-m-d H:i:s');
+            @$this->dbConnection->query("INSERT INTO ssids (ssid, created_at) VALUES ('%s', '%s')", $ssid, $created_date);
+        }
+
+        // Impersonate: source MAC = target BSSID, target MAC = broadcast
+        $this->pineAPHelper->setSource($bssid);
+        $this->pineAPHelper->setTarget('FF:FF:FF:FF:FF:FF');
+
+        // Hop the monitor interface to the target channel
+        $monitorInterface = $this->pineAPHelper->getPineapInterface();
+        if (!empty($monitorInterface)) {
+            exec('iw dev ' . escapeshellarg($monitorInterface) . ' set channel ' . intval($channel) . ' 2>&1', $output);
+        }
+
+        // Best-effort notification
+        if (file_exists('/pineapple/modules/Notify/api/Notifier.php')) {
+            require_once('/pineapple/modules/Notify/api/Notifier.php');
+            \pineapple\Notifier::send('[PineAP] Evil twin cloned: ' . $ssid . ' (' . $bssid . ') ch ' . $channel . ' ' . $encryption);
+        }
+
+        $this->response = array('success' => true, 'ssid' => $ssid, 'bssid' => $bssid, 'channel' => $channel);
     }
 }

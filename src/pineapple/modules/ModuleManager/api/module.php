@@ -42,7 +42,56 @@ class ModuleManager extends SystemModule
                     $this->restoreSDcardModules();
                 }
                 break;
+
+            case 'checkModuleDependencies':
+                $this->checkModuleDependencies();
+                break;
         }
+    }
+
+    private function checkModuleDependencies()
+    {
+        // Scan installed module files for references to common tools and
+        // report which of those tools are not installed on the device.
+        $knownTools = array(
+            'aircrack-ng', 'aireplay-ng', 'airodump-ng', 'airmon-ng',
+            'tcpdump', 'nmap', 'mdk3', 'reaver', 'bully', 'wash',
+            'hostapd', 'dnsmasq', 'python', 'php', 'curl', 'wget',
+            'macchanger', 'iw', 'hydra', 'john', 'hashcat', 'tshark',
+            'socat', 'sqlite3', 'uci', 'openssl', 'nc', 'ncat', 'hexdump',
+        );
+
+        $results = array();
+        $moduleDirs = glob('/pineapple/modules/*');
+        foreach ($moduleDirs as $moduleDir) {
+            $moduleName = basename($moduleDir);
+            $infoFile = $moduleDir . '/module.info';
+            if (!file_exists($infoFile)) {
+                continue;
+            }
+
+            $foundTools = array();
+            foreach ($knownTools as $tool) {
+                exec("grep -rEoh '\\b{$tool}\\b' " . escapeshellarg($moduleDir) . " 2>/dev/null | head -1", $grepOut);
+                if (!empty($grepOut)) {
+                    $foundTools[$tool] = $this->checkDependency($tool);
+                }
+            }
+
+            $missing = array();
+            foreach ($foundTools as $tool => $installed) {
+                if (!$installed) {
+                    $missing[] = $tool;
+                }
+            }
+
+            $results[$moduleName] = array(
+                'missing' => $missing,
+                'checked' => array_keys($foundTools),
+            );
+        }
+
+        $this->response = array('success' => true, 'dependencies' => $results);
     }
 
     private function getAvailableModules()

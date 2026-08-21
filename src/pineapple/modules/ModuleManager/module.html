@@ -16,7 +16,28 @@
 
             <div class="panel panel-default" ng-show="gotAvailableModules">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Available Modules <button class="btn btn-default btn-xs btn-fixed-length pull-right" ng-click="getAvailableModules()">Refresh</button></h3>
+                    <h3 class="panel-title">
+                        Module Store Browser
+                        <span class="pull-right">
+                            <button class="btn btn-default btn-xs" ng-click="updateAll()" ng-disabled="updatingAll || updateableModules().length === 0">
+                                <span ng-hide="updatingAll">Update All ({{ updateableModules().length }})</span>
+                                <span ng-show="updatingAll">Updating...</span>
+                            </button>
+                            <button class="btn btn-default btn-xs btn-fixed-length" ng-click="getAvailableModules()">Refresh</button>
+                        </span>
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    <div class="input-group">
+                        <span class="input-group-addon">Search</span>
+                        <input class="form-control" type="text" ng-model="searchTerm" placeholder="Search by name, author or description..."/>
+                        <span class="input-group-addon">Type</span>
+                        <select class="form-control" ng-model="typeFilter">
+                            <option value="">All</option>
+                            <option ng-repeat="type in getTypes()" value="{{ type }}">{{ type }}</option>
+                        </select>
+                    </div>
+                    <p class="alert well-sm alert-info" ng-show="updateAllStatus">{{ updateAllStatus }}</p>
                 </div>
                 <div class="table-responsive table-dropdown">
                     <table class="table module-table table-hover">
@@ -32,7 +53,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="(moduleName, module) in availableModules" ng-if="module.installed === undefined">
+                            <tr ng-repeat="(moduleName, module) in filteredAvailable()" ng-if="module.installed === undefined">
                                 <td>
                                     {{ module['title'] }}
                                 </td>
@@ -73,7 +94,15 @@
         <div class="col-sm-12">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Installed Modules</h3>
+                    <h3 class="panel-title">
+                        Installed Modules
+                        <span class="pull-right">
+                            <button class="btn btn-default btn-xs" ng-click="checkDependencies()" ng-disabled="checkingDeps">
+                                <span ng-hide="checkingDeps">Check Dependencies</span>
+                                <span ng-show="checkingDeps">Checking...</span>
+                            </button>
+                        </span>
+                    </h3>
                 </div>
                 <div class="table-responsive table-dropdown">
                     <table class="table table-hover">
@@ -85,6 +114,7 @@
                                 <th>Size</th>
                                 <th>Author</th>
                                 <th>Type</th>
+                                <th>Dependencies</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -107,6 +137,13 @@
                                 </td>
                                 <td>
                                     {{ module['type'] }}
+                                </td>
+                                <td>
+                                    <span class="text-success" ng-if="moduleMissingDeps(moduleName) !== null && moduleMissingDeps(moduleName).length === 0">OK</span>
+                                    <span class="text-danger" ng-if="moduleMissingDeps(moduleName) !== null && moduleMissingDeps(moduleName).length > 0" title="{{ moduleMissingDeps(moduleName).join(', ') }}">
+                                        Missing: {{ moduleMissingDeps(moduleName).join(', ') }}
+                                    </span>
+                                    <span class="text-muted" ng-if="moduleMissingDeps(moduleName) === null">-</span>
                                 </td>
                                 <td>
                                 <button type="button" class="btn btn-danger btn-xs btn-fixed-length" ng-hide="(module['type'] === 'System')" ng-click="removeModule(moduleName)">Remove</button>
